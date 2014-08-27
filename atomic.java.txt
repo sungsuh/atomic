@@ -1,0 +1,72 @@
+// Sending Current Address to Text Message //
+
+// In MainActivity
+LocationActivity LCA;
+		
+@Override
+public void onCreate(Bundle savedInstanceState)
+{
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	Red = (Button) findViewById(R.id.button1);	// Assign Red to button1
+        LCA = new LocationActivity(MainActivity.this);
+	if(LCA.canGetLocation)	// GPS is on and able to get location
+	{
+		final double LATITUDE = LCA.getLatitude();	// Get Latitude
+		final double LONGITUDE = LCA.getLongitude();	// Get Longitude
+		Geocoder geocoder = new Geocoder(this, Locale.ENGLISH);
+		try
+		{  
+			List<Address> addresses = geocoder.getFromLocation(LATITUDE, LONGITUDE, 1);	// Using Geocoder to convert the latitude and longitude to actual address
+			if(addresses != null)
+			{  
+				Address returnedAddress = addresses.get(0);  
+				for(int i=0; i<returnedAddress.getMaxAddressLineIndex(); i++) 
+				{
+					strReturnedAddress.append(returnedAddress.getAddressLine(i)).append(" ");
+				}   
+				Red.setOnClickListener(new View.OnClickListener()
+				{
+					public void onClick(View v)
+					{
+						// TODO Auto-generated method stub
+						String message = strReturnedAddress.toString();	// Address to string
+						String numb1 = "1234567890";	// Phone Number
+						SmsManager.getDefault().sendTextMessage(numb1,null,message,null,null);	// Send a text message with the address to the phone number
+						Toast.makeText(getApplicationContext(), "Message Sent Successfully!", Toast.LENGTH_LONG).show();	// Toasting success message
+					}
+				});
+			}  
+			else
+			{   
+				Red.setOnClickListener(new View.OnClickListener()
+				{
+					public void onClick(View v)
+					{
+						// TODO Auto-generated method stub
+						Toast.makeText(getApplicationContext(), "No Address Returned!", Toast.LENGTH_LONG).show();
+					}
+				});
+			} 
+		} 
+		catch (IOException e)	// If the GPS cannot get address 
+		{  
+			// TODO Auto-generated catch block  
+			e.printStackTrace(); 
+			Red.setOnClickListener(new View.OnClickListener()
+			{
+				public void onClick(View v)
+				{
+					// TODO Auto-generated method stub
+					String title2 = "GPS Error";
+					String msg2 = "Cannot get Address!\nPlease restart the program!";
+					showDialog2(title2, msg2);
+				}
+			});
+		}
+	}
+	else	// If the GPS is off show the alert
+	{
+		LCA.showSettingsAlert();
+	}
+}	   	
